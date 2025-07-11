@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Pracownicy</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    form { margin-top: 20px; display: none; }
+  </style>
+</head>
+<body>
+  <h1>Pracownicy</h1>
+  <button id="showForm">Dodaj</button>
+
+  <form id="employeeForm" style="display: none;">
+    <input type="text" id="imie" placeholder="Imię" required>
+    <input type="text" id="nazwisko" placeholder="Nazwisko" required>
+    <input type="text" id="login" placeholder="Login" required>
+    <input type="password" id="haslo" placeholder="Hasło" required>
+    <select id="dostep" required>
+      <option value="" disabled selected>Wybierz dostęp</option>
+      <option value="web">Web (zarządzanie)</option>
+      <option value="android">Android (pracownik)</option>
+    </select>
+    <button type="submit">Zapisz</button>
+  </form>
+
+  <table id="employeeTable">
+    <thead>
+      <tr>
+        <th>Imię</th>
+        <th>Nazwisko</th>
+        <th>Login</th>
+        <th>Dostęp</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const showFormBtn = document.getElementById('showForm');
+    const form = document.getElementById('employeeForm');
+    const tableBody = document.querySelector('#employeeTable tbody');
+
+    showFormBtn.addEventListener('click', () => {
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+
+    async function loadEmployees() {
+      const res = await fetch('http://localhost:5000/pracownicy');
+      const data = await res.json();
+      tableBody.innerHTML = '';
+      data.forEach(emp => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${emp.imie}</td><td>${emp.nazwisko}</td><td>${emp.login}</td><td>${emp.dostep}</td>`;
+        tableBody.appendChild(row);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const imie = document.getElementById('imie').value;
+      const nazwisko = document.getElementById('nazwisko').value;
+      const login = document.getElementById('login').value;
+      const haslo = document.getElementById('haslo').value;
+      const dostep = document.getElementById('dostep').value;
+
+      const res = await fetch('http://localhost:5000/pracownicy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imie, nazwisko, login, haslo, dostep })
+      });
+
+      if (res.ok) {
+        form.reset();
+        form.style.display = 'none';
+        loadEmployees();
+      }
+    });
+
+    loadEmployees();
+  </script>
+</body>
+</html>

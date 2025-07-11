@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Obłożenie</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Obłożenie</h1>
+
+  <form id="oblozenieForm">
+    <select id="pracownikSelect">
+      <option value="">Wybierz pracownika</option>
+    </select>
+    <input type="text" id="zadanie" placeholder="Zadanie" required>
+    <button type="submit">Zapisz</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Pracownik</th>
+        <th>Zadanie</th>
+        <th>Akcja</th>
+      </tr>
+    </thead>
+    <tbody id="oblozenieTable"></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById('oblozenieForm');
+    const zadanieInput = document.getElementById('zadanie');
+    const pracownikSelect = document.getElementById('pracownikSelect');
+    const oblozenieTable = document.getElementById('oblozenieTable');
+
+    let isEditing = false;
+    let editingId = null;
+
+    async function loadPracownicy() {
+      const res = await fetch('/pracownicy');
+      const data = await res.json();
+      pracownikSelect.innerHTML = '<option value="">Wybierz pracownika</option>';
+      data.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.textContent = `${p.imie} ${p.nazwisko}`;
+        pracownikSelect.appendChild(option);
+      });
+    }
+
+    async function loadOblozenie() {
+      const res = await fetch('/oblozenie');
+      const data = await res.json();
+      oblozenieTable.innerHTML = '';
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.imie} ${row.nazwisko}</td>
+          <td>${row.zadanie}</td>
+          <td><button class="editBtn" data-id="${row.id}" data-pracownik="${row.pracownik_id}" data-zadanie="${row.zadanie}">Modyfikuj</button></td>
+        `;
+        oblozenieTable.appendChild(tr);
+      });
+
+      document.querySelectorAll('.editBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          zadanieInput.value = btn.dataset.zadanie;
+          pracownikSelect.value = btn.dataset.pracownik;
+          isEditing = true;
+          editingId = btn.dataset.id;
+        });
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pracownik_id = pracownikSelect.value;
+      const zadanie = zadanieInput.value;
+
+      if (!pracownik_id) {
+        alert('Wybierz pracownika');
+        return;
+      }
+
+      const url = isEditing
+        ? `/oblozenie/${editingId}`
+        : '/oblozenie';
+
+      const method = isEditing ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pracownik_id, zadanie })
+      });
+
+      if (res.ok) {
+        form.reset();
+        isEditing = false;
+        editingId = null;
+        loadOblozenie();
+      }
+    });
+
+    loadPracownicy();
+    loadOblozenie();
+  </script>
+</body>
+</html>

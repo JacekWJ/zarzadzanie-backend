@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel Zarządzania</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Witaj, <span id="userName"></span>!</h1>
+  <h2>Wybierz kategorię:</h2>
+  <ul>
+    <li><button id="employeesBtn">Pracownicy</button></li>
+    <li><button id="workloadBtn">Obłożenie</button></li>
+    <li><button id="clientsBtn">Klienci</button></li>
+  </ul>
+
+  <script>
+    // Pobierz dane użytkownika z localStorage
+    const user = JSON.parse(localStorage.getItem('loggedInUser'));
+    const userNameSpan = document.getElementById('userName');
+
+    if (!user) {
+      // Jeśli nie zalogowany, przekieruj na login
+      window.location.href = 'login.html';
+    } else {
+      userNameSpan.textContent = user.username;
+    }
+
+    // Obsługa kliknięć (na razie tylko alerty)
+    document.getElementById('employeesBtn').addEventListener('click', () => {
+  window.location.href = 'pracownicy.html';
+});
+
+
+    document.getElementById('workloadBtn').addEventListener('click', () => {
+  window.location.href = 'oblozenie.html';
+});
+
+
+    document.getElementById('clientsBtn').addEventListener('click', () => {
+      alert('Wybrano kategorię: Klienci');
+    });
+  </script>
+</body>
+</html>
